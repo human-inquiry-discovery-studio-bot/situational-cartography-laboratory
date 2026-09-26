@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Situational Cartography Laboratory™ | The Human Inquiry &amp; Discovery Studio™</title>
+<meta name="description" content="A guided space for thinking things through — your situation, and yourself. Educational and philosophical inquiry; not clinical, medical, or psychological services.">
+<style>
+  :root {
+    --paper: #faf7f0;
+    --paper-deep: #f3eee3;
+    --ink: #2b2724;
+    --ink-soft: #6b6157;
+    --line: #d8d0c0;
+    --accent: #2f5d5a;
+    --accent-deep: #234745;
+    --gold: #b08d3e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+  .contour {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+    background:
+      radial-gradient(ellipse 80% 60% at 85% 10%, transparent 60%, rgba(47,93,90,.05) 61%, transparent 62%),
+      radial-gradient(ellipse 70% 55% at 10% 90%, transparent 58%, rgba(176,141,62,.06) 59%, transparent 60%);
+  }
+  .wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 48px 24px 40px; }
+  header { text-align: center; margin-bottom: 8px; }
+  .brand {
+    font-size: .82rem; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  h1 {
+    font-size: clamp(1.9rem, 4.6vw, 2.7rem); font-weight: normal;
+    margin: 14px 0 6px; color: var(--ink); line-height: 1.2;
+  }
+  .rule {
+    width: 64px; height: 2px; background: var(--gold); margin: 22px auto 26px;
+  }
+  .step { display: none; animation: rise .45s ease; }
+  .step.active { display: block; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .card {
+    background: #fffdf8; border: 1px solid var(--line); border-radius: 10px;
+    padding: clamp(22px, 5vw, 40px); box-shadow: 0 1px 3px rgba(43,39,36,.06);
+  }
+  h2 { font-size: 1.5rem; font-weight: normal; margin-bottom: 8px; }
+  .lead { color: var(--ink-soft); font-size: 1.02rem; margin-bottom: 24px; }
+  .big { font-size: 1.12rem; }
+  textarea, input[type=text], input[type=email] {
+    width: 100%; font-family: inherit; font-size: 1rem; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+    padding: 14px; resize: vertical; min-height: 130px;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .helper { font-size: .88rem; color: var(--ink-soft); margin-top: 8px; }
+  .choices { display: grid; gap: 12px; }
+  .choice {
+    display: block; cursor: pointer;
+  }
+  .choice input { display: none; }
+  .choice .box {
+    border: 1.5px solid var(--line); border-radius: 8px; padding: 16px 18px;
+    background: var(--paper); transition: border-color .2s, background .2s;
+  }
+  .choice input:checked + .box {
+    border-color: var(--accent); background: rgba(47,93,90,.07);
+  }
+  .choice .box strong { font-weight: normal; font-size: 1.05rem; display: block; }
+  .choice .box span { font-size: .88rem; color: var(--ink-soft); }
+  button.primary {
+    font-family: inherit; font-size: 1.02rem; cursor: pointer;
+    background: var(--accent); color: #fdfcf8; border: none; border-radius: 8px;
+    padding: 14px 30px; margin-top: 24px; transition: background .2s;
+  }
+  button.primary:hover { background: var(--accent-deep); }
+  button.ghost {
+    font-family: inherit; font-size: .95rem; cursor: pointer; background: none;
+    color: var(--accent); border: none; margin-top: 12px; text-decoration: underline;
+  }
+  .ai-note {
+    font-size: .85rem; color: var(--ink-soft); margin-top: 26px; padding-top: 14px;
+    border-top: 1px dashed var(--line);
+  }
+  .progress { display: flex; gap: 6px; justify-content: center; margin-bottom: 30px; }
+  .progress i {
+    width: 26px; height: 3px; background: var(--line); border-radius: 2px;
+  }
+  .progress i.on { background: var(--gold); }
+  .back { font-size: .85rem; color: var(--ink-soft); background: none; border: none;
+    font-family: inherit; cursor: pointer; text-decoration: underline; margin-bottom: 16px; display: none; }
+  .summary-block { background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+    padding: 20px; margin: 14px 0; text-align: left; }
+  .summary-block h3 { font-size: 1rem; color: var(--accent-deep); margin-bottom: 6px; font-weight: bold; }
+  .summary-block p { white-space: pre-wrap; font-size: .98rem; }
+  .modal-link { color: var(--accent); text-decoration: underline; cursor: pointer; background: none; border: none; font-family: inherit; font-size: inherit; }
+  dialog {
+    border: 1px solid var(--line); border-radius: 10px; background: #fffdf8;
+    max-width: 640px; width: calc(100% - 40px); padding: 28px; color: var(--ink);
+  }
+  dialog::backdrop { background: rgba(43,39,36,.45); }
+  dialog h3 { font-weight: normal; font-size: 1.25rem; margin-bottom: 12px; }
+  dialog p, dialog li { font-size: .95rem; color: var(--ink-soft); }
+  dialog ul { margin: 10px 0 0 20px; }
+  dialog .closers { margin-top: 20px; text-align: right; }
+  footer {
+    margin-top: 44px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-size: .82rem; color: var(--ink-soft); text-align: center;
+  }
+  footer p { margin-bottom: 8px; }
+  .err { color: #9c3a2e; font-size: .9rem; margin-top: 10px; display: none; }
+</style>
+</head>
+<body>
+<div class="contour"></div>
+<div class="wrap">
+  <header>
+    <div class="brand">The Human Inquiry &amp; Discovery Studio&trade;</div>
+    <h1>The Situational Cartography Laboratory&trade;</h1>
+    <div class="rule"></div>
+  </header>
+
+  <div class="progress" id="progress" style="display:none">
+    <i></i><i></i><i></i><i></i><i></i>
+  </div>
+  <button class="back" id="backBtn" onclick="goBack()">&larr; Back</button>
+
+  <!-- WELCOME -->
+  <section class="step active" id="s0">
+    <div class="card" style="text-align:center">
+      <h2>Get clear on your situation &mdash; and on yourself.</h2>
+      <p class="lead big" style="max-width:560px;margin-left:auto;margin-right:auto">
+        This is a guided space for thinking things through. Whether you're facing a hard
+        decision, a confusing situation, or you just want to understand yourself better &mdash;
+        your values, your interests, what actually matters to you &mdash; this helps you slow
+        down and see it more clearly. It won't tell you what to do. It'll help you find
+        your own answer.
+      </p>
+      <button class="primary" onclick="next(1)">Start My Inquiry</button>
+      <button class="ghost" onclick="document.getElementById('how').showModal()">How this works</button>
+      <p class="ai-note">
+        This tool uses AI-assisted prompts to guide your reflection. It doesn't diagnose,
+        predict, or replace professional advice.<br>
+        Your writing stays in your browser &mdash; nothing is sent or stored anywhere.
+      </p>
+    </div>
+  </section>
+
+  <!-- STEP 1: DESCRIBE -->
+  <section class="step" id="s1">
+    <div class="card">
+      <h2>What's going on?</h2>
+      <p class="lead">Take a moment. Write about what's happening, or where you are in your life right now &mdash; there's no right way to start.</p>
+      <label class="helper" for="describe">What's happening, or what's been on your mind lately?</label>
+      <textarea id="describe" style="margin-top:8px" placeholder="You can write about an event, a decision, a feeling that something's off, or just a sense that something needs to change. A sentence or a page &mdash; either is fine."></textarea>
+      <p class="err" id="err1">A sentence or two is all we need to begin &mdash; the box can't be empty.</p>
+      <button class="primary" onclick="next(2)">Continue</button>
+    </div>
+  </section>
+
+  <!-- STEP 2: CLARIFY -->
+  <section class="step" id="s2">
+    <div class="card">
+      <h2>What would help most right now?</h2>
+      <p class="lead">Pick whichever feels closest &mdash; you can change your mind at any point.</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="focus" value="situation" checked>
+          <span class="box"><strong>My situation</strong><span>A decision, a problem, something happening around me I'm trying to see more clearly.</span></span></label>
+        <label class="choice"><input type="radio" name="focus" value="self">
+          <span class="box"><strong>Myself</strong><span>My values, interests, and what actually matters to me &mdash; the self-discovery side.</span></span></label>
+        <label class="choice"><input type="radio" name="focus" value="both">
+          <span class="box"><strong>Both</strong><span>I'm not sure where one ends and the other begins &mdash; help me look at the whole picture.</span></span></label>
+      </div>
+      <button class="primary" onclick="next(3)">Continue</button>
+    </div>
+  </section>
+
+  <!-- STEP 3: EXPLORE -->
+  <section class="step" id="s3">
+    <div class="card">
+      <h2>Let's look closer.</h2>
+      <p class="lead">These questions are here to help you notice things you might not have said out loud yet.</p>
+      <div id="promptsSituation">
+        <label class="helper">What's actually happening, as plainly as you'd tell a stranger?</label>
+        <textarea id="p1" style="margin-top:6px;margin-bottom:16px"></textarea>
+        <label class="helper">What's influencing this from outside &mdash; people, timing, circumstances?</label>
+        <textarea id="p2" style="margin-top:6px;margin-bottom:16px"></textarea>
+        <label class="helper">What feels most uncertain?</label>
+        <textarea id="p3" style="margin-top:6px"></textarea>
+      </div>
+      <div id="promptsSelf" style="display:none">
+        <label class="helper">What have you felt most like yourself doing recently?</label>
+        <textarea id="p4" style="margin-top:6px;margin-bottom:16px"></textarea>
+        <label class="helper">What matters to you here, even if it's hard to explain why?</label>
+        <textarea id="p5" style="margin-top:6px;margin-bottom:16px"></textarea>
+        <label class="helper">Is there a version of you that feels different from the one currently living this situation?</label>
+        <textarea id="p6" style="margin-top:6px"></textarea>
+      </div>
+      <p class="helper" style="margin-top:12px">Answer as many as you like &mdash; skipping is fine.</p>
+      <button class="primary" onclick="next(4)">Continue</button>
+    </div>
+  </section>
+
+  <!-- STEP 4: POSSIBILITIES -->
+  <section class="step" id="s4">
+    <div class="card">
+      <h2>Where could this go?</h2>
+      <p class="lead">You don't need the whole plan &mdash; just what comes to mind.</p>
+      <label class="helper">Given what you've noticed, what possibilities are you curious about?</label>
+      <textarea id="p7" style="margin-top:6px;margin-bottom:16px"></textarea>
+      <label class="helper">What's one small, doable next step?</label>
+      <textarea id="p8" style="margin-top:6px"></textarea>
+      <button class="primary" onclick="next(5)">See My Summary</button>
+    </div>
+  </section>
+
+  <!-- STEP 5: SUMMARY -->
+  <section class="step" id="s5">
+    <div class="card" style="text-align:center">
+      <h2>Here's what you've mapped.</h2>
+      <p class="lead">This pulls together what you shared. It's not a verdict &mdash; it's a mirror.</p>
+      <div style="text-align:left">
+        <div class="summary-block"><h3>Your situation, in your words</h3><p id="sumSituation"></p></div>
+        <div class="summary-block" id="blkFocus"><h3>What you're carrying with you</h3><p id="sumSelf"></p></div>
+        <div class="summary-block"><h3>Possibilities &amp; your next step</h3><p id="sumNext"></p></div>
+      </div>
+      <p class="lead" style="font-size:.88rem;margin-top:18px">
+        A gentle limit: this tool is for reflection and self-discovery only. It isn't
+        counselling, therapy, or a clinical or career assessment, and it can't tell you
+        what to do. For important or urgent matters, a qualified professional is the
+        right port of call.
+      </p>
+      <button class="primary" onclick="copySummary()">Copy My Summary</button>
+      <button class="ghost" onclick="startFresh()">Start a New Inquiry</button>
+      <p class="ai-note" id="copied" style="display:none">Copied. This summary is yours to keep.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      <button class="modal-link" onclick="document.getElementById('how').showModal()">How this works</button> &nbsp;&middot;&nbsp;
+      <button class="modal-link" onclick="document.getElementById('privacy').showModal()">Privacy</button> &nbsp;&middot;&nbsp;
+      <button class="modal-link" onclick="document.getElementById('terms').showModal()">Terms of Use</button>
+    </p>
+    <p>&copy; 2026 The Human Inquiry &amp; Discovery Studio&trade; &mdash; Orillia, Ontario, Canada.<br>
+    Educational and philosophical inquiry only. We do not provide clinical, psychological,
+    medical, or psychotherapeutic services, and no part of this tool is a psychological test
+    or clinical instrument.</p>
+  </footer>
+</div>
+
+<dialog id="how">
+  <h3>How this works</h3>
+  <p>You'll move through a few short steps: describe what's going on, choose what would
+  help most, look a little closer, then consider where things could go. At the end you get
+  a plain-language summary &mdash; yours to keep, copy, or start fresh from.</p>
+  <p style="margin-top:10px">There's nothing to figure out in advance. Every question is
+  written in plain language, and you can skip anything that doesn't fit. Nothing you write
+  leaves your browser.</p>
+  <div class="closers"><button class="primary" style="margin-top:0" onclick="this.closest('dialog').close()">Close</button></div>
+</dialog>
+
+<dialog id="privacy">
+  <h3>Privacy</h3>
+  <p><strong>Who we are:</strong> The Situational Cartography Laboratory&trade; is operated by
+  The Human Inquiry &amp; Discovery Studio&trade;, based in Orillia, Ontario, Canada.</p>
+  <ul>
+    <li><strong>What we collect:</strong> Nothing. The tool runs entirely in your browser; the text you write is not sent to or stored by us.</li>
+    <li><strong>If you contact us:</strong> we use your name and email only to respond to you.</li>
+    <li><strong>Your choices:</strong> you can ask us to access, correct, or delete any information you've sent us, at any time.</li>
+    <li><strong>Protection:</strong> we take reasonable technical and organizational steps to protect information. No online system can guarantee perfect security.</li>
+  </ul>
+  <p style="margin-top:10px">Questions or concerns? Contact us through the Studio website.</p>
+  <div class="closers"><button class="primary" style="margin-top:0" onclick="this.closest('dialog').close()">Close</button></div>
+</dialog>
+
+<dialog id="terms">
+  <h3>Terms of Use</h3>
+  <p>By using this tool, you agree to these terms. The Situational Cartography Laboratory&trade;
+  provides guided reflection and self-discovery support only &mdash; it is not professional
+  advice of any kind, including psychological, medical, legal, financial, or career advice.
+  You are solely responsible for any decisions or actions you take. To the fullest extent
+  permitted by law, The Human Inquiry &amp; Discovery Studio&trade; is not liable for damages
+  arising from your use of this tool. These terms are governed by the laws of Ontario, Canada.</p>
+  <p style="margin-top:10px"><strong>AI disclosure:</strong> This tool uses AI-assisted
+  prompts. AI-generated content may contain errors or omissions &mdash; please review anything
+  it produces before acting on it.</p>
+  <div class="closers"><button class="primary" style="margin-top:0" onclick="this.closest('dialog').close()">Close</button></div>
+</dialog>
+
+<script>
+  var cur = 0;
+  function show(n) {
+    document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById('s'+n).classList.add('active');
+    document.querySelectorAll('#progress i').forEach(function(el,i){ el.className = (i < n-1) ? 'on' : ''; });
+    document.getElementById('progress').style.display = n===0 ? 'none' : 'flex';
+    document.getElementById('backBtn').style.display = (n>=1 && n<=4) ? 'block' : 'none';
+    document.getElementById('backBtn').onclick = (n>=1 && n<=4) ? goBack : null;
+    cur = n;
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function focus() {
+    var v = document.querySelector('input[name=focus]:checked').value;
+    return v;
+  }
+  function next(n) {
+    if (n===2) {
+      var d = document.getElementById('describe').value.trim();
+      if (d.length < 3) { document.getElementById('err1').style.display='block'; return; }
+      document.getElementById('err1').style.display='none';
+    }
+    if (n===3) {
+      var f = focus();
+      document.getElementById('promptsSituation').style.display = (f==='self') ? 'none' : 'block';
+      document.getElementById('promptsSelf').style.display = (f==='situation') ? 'none' : 'block';
+    }
+    if (n===5) buildSummary();
+    show(n);
+  }
+  function goBack() { if (cur>0) show(cur-1); }
+  function val(id) { return document.getElementById(id).value.trim(); }
+  function buildSummary() {
+    var f = focus();
+    document.getElementById('sumSituation').textContent = val('describe') || '—';
+    var selfParts = [];
+    if (f!=='situation') {
+      var a = [val('p4'), val('p5'), val('p6')].filter(Boolean);
+      if (a.length) selfParts = selfParts.concat(a);
+    }
+    if (f!=='self') {
+      var b = [val('p1'), val('p2'), val('p3')].filter(Boolean);
+      if (b.length) selfParts = selfParts.concat(b);
+    }
+    document.getElementById('blkFocus').style.display = selfParts.length ? 'block' : 'none';
+    document.getElementById('sumSelf').textContent = selfParts.join('\n\n') || '—';
+    var nx = [val('p7'), val('p8')].filter(Boolean);
+    document.getElementById('sumNext').textContent = nx.length ? nx.join('\n\n') : '—';
+  }
+  function copySummary() {
+    var t = 'MY PERSONAL DISCOVERY SUMMARY — The Situational Cartography Laboratory™\n\n'
+      + 'WHAT\'S GOING ON:\n' + document.getElementById('sumSituation').textContent + '\n\n'
+      + 'WHAT I\'M CARRYING WITH ME:\n' + document.getElementById('sumSelf').textContent + '\n\n'
+      + 'POSSIBILITIES & NEXT STEP:\n' + document.getElementById('sumNext').textContent + '\n\n'
+      + 'A gentle limit: this is a reflection tool, not counselling, therapy, or a clinical or career assessment.';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function(){
+        document.getElementById('copied').style.display='block';
+      });
+    } else {
+      document.getElementById('copied').style.display='block';
+    }
+  }
+  function startFresh() {
+    ['describe','p1','p2','p3','p4','p5','p6','p7','p8'].forEach(function(id){
+      document.getElementById(id).value='';
+    });
+    show(0);
+  }
+</script>
+</body>
+</html>
